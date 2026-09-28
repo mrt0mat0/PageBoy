@@ -48,6 +48,8 @@ check("page 15 + 1 stays 15", S(15, 1), 15)
 
 -- Wiring between the files
 check("settings page hooked up", type(ns.OnChanged), "function")
+check("Alt has self-cast help", ns.HELP.alt and ns.HELP.alt[1], "Alt and Self-Cast")
+check("Shift has no help mark", ns.HELP.shift, nil)
 check("SetPage action", type(ns.actions.SetPage), "function")
 check("SetPage refuses before load", (ns.actions.SetPage("shift", 3)), false)
 

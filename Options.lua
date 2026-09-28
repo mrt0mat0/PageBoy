@@ -8,6 +8,17 @@ local LEFT = 16
 local ROW_TOP, ROW_GAP = -96, 32
 local LABELS = { shift = "Shift", ctrl = "Ctrl", alt = "Alt" }
 
+-- Hover help shown next to a modifier's label: title, then the explanation.
+local HELP = {
+    alt = { "Alt and Self-Cast",
+        "By default, holding Alt while casting a helpful spell casts it on yourself.\n\n"
+        .. "If Alt pages your bar, Alt+key fires the spell on your Alt page instead, and those "
+        .. "spells always self-cast because Alt is still held.\n\n"
+        .. "No problem if you don't self-cast with Alt. Otherwise, move self-cast to another "
+        .. "key in the game's options, or page with Shift or Ctrl instead." },
+}
+ns.HELP = HELP
+
 local panel = CreateFrame("Frame")
 panel.name = "PageBoy"
 local built, Refresh
@@ -37,8 +48,27 @@ local function Button(parent, text, width, x, y, onClick)
 end
 
 -- Shift / Ctrl / Alt:  [-] Page 2 [+]
+-- A "(?)" that explains something on hover.
+local function HelpMark(anchor, help)
+    local mark = CreateFrame("Frame", nil, panel)
+    mark:SetSize(20, 16)
+    mark:SetPoint("LEFT", anchor, "RIGHT", 4, 0)
+    local text = mark:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    text:SetAllPoints()
+    text:SetText("(?)")
+    mark:EnableMouse(true)
+    mark:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(help[1], 1, 0.82, 0)
+        GameTooltip:AddLine(help[2], 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    mark:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
 local function ModifierRow(mod, y)
-    Text(panel, "GameFontHighlight", LABELS[mod], LEFT, y - 4)
+    local label = Text(panel, "GameFontHighlight", LABELS[mod], LEFT, y - 4)
+    if HELP[mod] then HelpMark(label, HELP[mod]) end
     Button(panel, "-", 24, LEFT + 70, y, function()
         Do(ns.actions.SetPage(mod, ns.StepPage(ns.GetPage(mod), -1)))
     end)
@@ -62,14 +92,11 @@ local function Build()
 
     local below = ROW_TOP - #ns.MODIFIERS * ROW_GAP - 4
     Text(panel, "GameFontDisableSmall",
-        "Alt is the game's default self-cast key. Paging on Alt stops Alt self-cast on your main bar.",
-        LEFT, below, 560)
-    Text(panel, "GameFontDisableSmall",
         "Pages 7 to 10 hold druid form, warrior stance and rogue stealth bars, so paging there shows those bars.",
-        LEFT, below - 16, 560)
+        LEFT, below, 560)
 
-    Text(panel, "GameFontNormal", "Keybind Conflicts", LEFT, below - 52)
-    widgets.conflicts = Text(panel, "GameFontHighlightSmall", "", LEFT, below - 72, 560)
+    Text(panel, "GameFontNormal", "Keybind Conflicts", LEFT, below - 36)
+    widgets.conflicts = Text(panel, "GameFontHighlightSmall", "", LEFT, below - 56, 560)
     built = true
 end
 
