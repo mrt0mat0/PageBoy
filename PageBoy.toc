@@ -2,7 +2,7 @@
 ## Title: PageBoy
 ## Notes: Hold Shift, Ctrl or Alt to page your main action bar. Named for the haircut.
 ## Author: CJ
-## Version: 0.1
+## Version: 1.0
 ## SavedVariablesPerCharacter: PageBoyCharDB
 
 PageBoy.lua
