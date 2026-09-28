@@ -24,8 +24,8 @@ panel.name = "PageBoy"
 local built, Refresh
 local widgets = { values = {} }
 
-local function Do(ok, message)
-    if not ok and message then print("|cff33ff99PageBoy|r: " .. message) end
+local function Do(ok, message, always)
+    if message and (always or not ok) then print("|cff33ff99PageBoy|r: " .. message) end
     Refresh()
 end
 
@@ -96,7 +96,14 @@ local function Build()
         LEFT, below, 560)
 
     Text(panel, "GameFontNormal", "Keybind Conflicts", LEFT, below - 36)
-    widgets.conflicts = Text(panel, "GameFontHighlightSmall", "", LEFT, below - 56, 560)
+    widgets.remove = Button(panel, "Remove Conflicts", 140, LEFT, below - 56, function()
+        StaticPopup_Show("PAGEBOY_REMOVE_CONFLICTS", #ns.Conflicts())
+    end)
+    widgets.undo = Button(panel, "Undo", 80, LEFT + 146, below - 56, function()
+        local ok, message = ns.actions.RestoreBindings()
+        Do(ok, message, true)
+    end)
+    widgets.conflicts = Text(panel, "GameFontHighlightSmall", "", LEFT, below - 86, 560)
     built = true
 end
 
@@ -107,13 +114,30 @@ function Refresh()
         value:SetText(page and ("Page " .. page) or "|cff999999Off|r")
     end
     local found = ns.Conflicts()
+    widgets.remove:SetEnabled(#found > 0)
+    widgets.undo:SetShown(ns.CanUndoBindings())
     if #found == 0 then
         widgets.conflicts:SetText("None. Your modifiers reach your action buttons.")
     else
-        widgets.conflicts:SetText("These key combos are bound to something else, so they won't reach your paged buttons."
-            .. " Unbind them in Options > Keybindings:\n\n" .. table.concat(found, "\n"))
+        local lines = {}
+        for i, c in ipairs(found) do lines[i] = ns.ConflictText(c) end
+        widgets.conflicts:SetText("These key combos are bound to something else, so they won't reach your paged buttons:\n\n"
+            .. table.concat(lines, "\n"))
     end
 end
+
+StaticPopupDialogs["PAGEBOY_REMOVE_CONFLICTS"] = {
+    text = "Unbind %d key combos so your modifiers reach your action buttons? PageBoy remembers them, and Undo puts them back.",
+    button1 = YES or "Yes",
+    button2 = NO or "No",
+    OnAccept = function()
+        local ok, message = ns.actions.ClearConflicts()
+        Do(ok, message, true)
+    end,
+    timeout = 0,
+    whileDead = true,
+    hideOnEscape = true,
+}
 
 panel:SetScript("OnShow", function()
     if not built then Build() end

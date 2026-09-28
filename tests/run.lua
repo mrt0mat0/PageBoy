@@ -6,6 +6,7 @@ end
 CreateFrame = stub
 UIParent = stub()
 SlashCmdList = {}
+StaticPopupDialogs = {}
 
 local ns = {}
 assert(loadfile("PageBoy.lua"))("PageBoy", ns)
@@ -52,6 +53,44 @@ check("Alt has self-cast help", ns.HELP.alt and ns.HELP.alt[1], "Alt and Self-Ca
 check("Shift has no help mark", ns.HELP.shift, nil)
 check("SetPage action", type(ns.actions.SetPage), "function")
 check("SetPage refuses before load", (ns.actions.SetPage("shift", 3)), false)
+
+-- Keybind conflicts: remove them, then undo, with fake bindings
+local BINDS
+GetBindingKey = function(command)
+    local keys = {}
+    for key, action in pairs(BINDS) do if action == command then keys[#keys + 1] = key end end
+    table.sort(keys)
+    return unpack and unpack(keys) or table.unpack(keys)
+end
+GetBindingAction = function(key) return BINDS[key] or "" end
+SetBinding = function(key, action) BINDS[key] = action end
+local saves = 0
+SaveBindings = function() saves = saves + 1 end
+GetCurrentBindingSet = function() return 1 end
+InCombatLockdown = function() return false end
+
+BINDS = { ["1"] = "ACTIONBUTTON1", ["2"] = "ACTIONBUTTON2", ["SHIFT-1"] = "ACTIONPAGE1",
+    ["CTRL-Q"] = "ACTIONBUTTON3", ["SHIFT-CTRL-Q"] = "SOMETHING" }
+PageBoyCharDB = { pages = { shift = 2 } }
+check("one conflict (SHIFT-1)", #ns.Conflicts(), 1)
+check("conflict text", ns.ConflictText(ns.Conflicts()[1]), "SHIFT-1 = ACTIONPAGE1")
+check("remove succeeds", (ns.actions.ClearConflicts()), true)
+check("SHIFT-1 unbound", BINDS["SHIFT-1"], nil)
+check("bindings saved", saves, 1)
+check("no conflicts left", #ns.Conflicts(), 0)
+check("undo available", ns.CanUndoBindings(), true)
+check("undo succeeds", (ns.actions.RestoreBindings()), true)
+check("SHIFT-1 restored", BINDS["SHIFT-1"], "ACTIONPAGE1")
+check("undo used up", ns.CanUndoBindings(), false)
+
+ns.actions.ClearConflicts()
+BINDS["SHIFT-1"] = "MY_OWN_MACRO"
+ns.actions.RestoreBindings()
+check("undo doesn't overwrite a newer binding", BINDS["SHIFT-1"], "MY_OWN_MACRO")
+
+InCombatLockdown = function() return true end
+check("no keybind changes in combat", (ns.actions.ClearConflicts()), false)
+PageBoyCharDB, InCombatLockdown = nil, nil
 
 print(("%d/%d passed"):format(total - failures, total))
 os.exit(failures == 0 and 0 or 1)

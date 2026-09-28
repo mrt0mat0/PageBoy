@@ -4,9 +4,9 @@
 # Run from the repo root: sh tests/globals.sh
 cd "$(dirname "$0")/.." || exit 1
 
-ALLOWED="_G C_AddOns C_Spell GameTooltip C_UnitAuras CreateFrame GetActionBarPage GetBindingAction GetBindingKey
+ALLOWED="_G C_AddOns C_Spell GameTooltip C_UnitAuras CreateFrame GetActionBarPage GetBindingAction GetBindingKey GetCurrentBindingSet
 GetAddOnMetadata GetBonusBarOffset InCombatLockdown InterfaceOptions_AddCategory InterfaceOptionsFrame_OpenToCategory IsInInstance PageBoyCharDB RegisterStateDriver
-SLASH_PAGEBOY1 SecureCmdOptionParse Settings SlashCmdList UIParent UnitHealth issecretvalue
+SLASH_PAGEBOY1 SaveBindings SecureCmdOptionParse SetBinding Settings SlashCmdList StaticPopupDialogs StaticPopup_Show UIParent UnitHealth NO YES issecretvalue
 ipairs math pairs pcall print select table tonumber tostring type"
 
 status=0

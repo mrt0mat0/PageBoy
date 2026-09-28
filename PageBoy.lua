@@ -87,15 +87,19 @@ end
 -- Keybind conflicts: if Shift+1 is bound to something (by default, "Action Page 1"),
 -- the game uses that binding and your button never sees the key.
 ---------------------------------------------------------------------------
+-- Each conflict is { combo = "SHIFT-1", action = "ACTIONPAGE1" }.
 local function Conflicts()
     local found = {}
     for _, mod in ipairs(MODIFIERS) do
         if Pages()[mod] then
             for i = 1, BUTTONS do
                 for _, key in ipairs({ GetBindingKey("ACTIONBUTTON" .. i) }) do
-                    local combo = MODIFIER_KEYS[mod] .. "-" .. key
-                    local action = GetBindingAction(combo)
-                    if action and action ~= "" then found[#found + 1] = combo .. " = " .. action end
+                    -- A button bound to an already-modified key (CTRL-Q) has no plain key to extend.
+                    if not key:find("-", 2, true) then
+                        local combo = MODIFIER_KEYS[mod] .. "-" .. key
+                        local action = GetBindingAction(combo)
+                        if action and action ~= "" then found[#found + 1] = { combo = combo, action = action } end
+                    end
                 end
             end
         end
@@ -103,11 +107,44 @@ local function Conflicts()
     return found
 end
 
+local function ConflictText(c)
+    return c.combo .. " = " .. c.action
+end
+ns.ConflictText = ConflictText
+
 local function ReportConflicts()
     local found = Conflicts()
     if #found == 0 then return end
-    Say(("%d key combos are bound to something else, so they won't reach your paged buttons. Unbind them in Options > Keybindings:"):format(#found))
-    for _, line in ipairs(found) do print("  " .. line) end
+    Say(("%d key combos are bound to something else, so they won't reach your paged buttons. /pageboy has a button to remove them:"):format(#found))
+    for _, c in ipairs(found) do print("  " .. ConflictText(c)) end
+end
+
+-- Unbind every conflict and remember what each was, so it can be undone.
+local function ClearConflicts()
+    local found = Conflicts()
+    local removed = PageBoyCharDB.removedBindings or {}
+    for _, c in ipairs(found) do
+        removed[c.combo] = c.action
+        SetBinding(c.combo, nil)
+    end
+    PageBoyCharDB.removedBindings = removed
+    SaveBindings(GetCurrentBindingSet())
+    return #found
+end
+
+-- Put back what ClearConflicts removed, unless you've bound that combo to something else since.
+local function RestoreBindings()
+    local restored = 0
+    for combo, action in pairs(PageBoyCharDB.removedBindings or {}) do
+        local current = GetBindingAction(combo)
+        if not current or current == "" then
+            SetBinding(combo, action)
+            restored = restored + 1
+        end
+    end
+    PageBoyCharDB.removedBindings = nil
+    SaveBindings(GetCurrentBindingSet())
+    return restored
 end
 
 ---------------------------------------------------------------------------
@@ -222,6 +259,23 @@ function ns.actions.SetPage(mod, page)
     if ns.OnChanged then ns.OnChanged() end
     return true
 end
+function ns.actions.ClearConflicts()
+    if not PageBoyCharDB then return false, "not loaded yet." end
+    if InCombatLockdown() then return false, "can't change keybinds in combat." end
+    local n = ClearConflicts()
+    if ns.OnChanged then ns.OnChanged() end
+    return true, ("removed %d keybinds. Undo puts them back."):format(n)
+end
+
+function ns.actions.RestoreBindings()
+    if not PageBoyCharDB then return false, "not loaded yet." end
+    if InCombatLockdown() then return false, "can't change keybinds in combat." end
+    local n = RestoreBindings()
+    if ns.OnChanged then ns.OnChanged() end
+    return true, ("restored %d keybinds."):format(n)
+end
+
+ns.CanUndoBindings = function() return PageBoyCharDB and PageBoyCharDB.removedBindings ~= nil end
 ns.GetPage = function(mod) return PageBoyCharDB and Pages()[mod] end
 ns.Conflicts = function() return PageBoyCharDB and Conflicts() or {} end
 
