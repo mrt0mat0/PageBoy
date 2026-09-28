@@ -36,13 +36,22 @@ local function ParsePage(text)
 end
 ns.ParsePage = ParsePage
 
--- One step up or down from a page: Off sits below page 1, and the ends don't wrap.
-local function StepPage(page, delta)
-    local n = (page or 0) + delta
-    if n < 1 then return nil end
-    return math.min(n, MAX_PAGE)
+-- What each page normally belongs to, on the Retail UI that WoW Forever is built on.
+-- 180 action slots make 15 pages of 12. A page whose bar you haven't turned on is free space.
+local PAGE_USES = {
+    [1] = "Main Bar", [2] = "Main Bar Page 2",
+    [3] = "Action Bar 4", [4] = "Action Bar 5", [5] = "Action Bar 3", [6] = "Action Bar 2",
+    [7] = "Form/Stance Bar", [8] = "Form/Stance Bar", [9] = "Form/Stance Bar", [10] = "Form/Stance Bar",
+    [11] = "Possess/Special Bar", [12] = "Unused",
+    [13] = "Action Bar 6", [14] = "Action Bar 7", [15] = "Action Bar 8",
+}
+
+local function PageLabel(page)
+    if not page then return "Off" end
+    return ("Page %d  ·  %s"):format(page, PAGE_USES[page] or "")
 end
-ns.StepPage = StepPage
+ns.PageLabel = PageLabel
+ns.MAX_PAGE = MAX_PAGE
 ns.MODIFIERS = MODIFIERS
 ns.MODIFIER_KEYS = MODIFIER_KEYS
 

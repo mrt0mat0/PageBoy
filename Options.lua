@@ -5,7 +5,7 @@ local addonName, ns = ...
 ns = ns or {}
 
 local LEFT = 16
-local ROW_TOP, ROW_GAP = -96, 32
+local ROW_TOP, ROW_GAP = -96, 36
 local LABELS = { shift = "Shift", ctrl = "Ctrl", alt = "Alt" }
 
 -- Hover help shown next to a modifier's label: title, then the explanation.
@@ -66,20 +66,50 @@ local function HelpMark(anchor, help)
     mark:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
 
+-- Dropdown of Off and every page. Newer clients have the DropdownButton menus; older
+-- ones only UIDropDownMenu, so fall back to that when the newer template isn't there.
+local function PageDropdown(mod, x, y)
+    local function Choose(page) Do(ns.actions.SetPage(mod, page)) end
+    local options = { false }
+    for page = 1, ns.MAX_PAGE do options[#options + 1] = page end
+
+    local ok, dd = pcall(CreateFrame, "DropdownButton", nil, panel, "WowStyle1DropdownTemplate")
+    if ok and dd and dd.SetupMenu then
+        dd:SetPoint("TOPLEFT", x, y + 2)
+        dd:SetWidth(230)
+        dd:SetupMenu(function(_, root)
+            for _, page in ipairs(options) do
+                local value = page or nil
+                root:CreateRadio(ns.PageLabel(value),
+                    function() return ns.GetPage(mod) == value end,
+                    function() Choose(value) end)
+            end
+        end)
+        dd.Update = function(self) self:GenerateMenu() end
+        return dd
+    end
+
+    dd = CreateFrame("Frame", "PageBoyDropdown" .. mod, panel, "UIDropDownMenuTemplate")
+    dd:SetPoint("TOPLEFT", x - 16, y + 4)
+    UIDropDownMenu_SetWidth(dd, 210)
+    UIDropDownMenu_Initialize(dd, function(_, level)
+        for _, page in ipairs(options) do
+            local value = page or nil
+            local info = UIDropDownMenu_CreateInfo()
+            info.text = ns.PageLabel(value)
+            info.checked = ns.GetPage(mod) == value
+            info.func = function() Choose(value) end
+            UIDropDownMenu_AddButton(info, level)
+        end
+    end)
+    dd.Update = function(self) UIDropDownMenu_SetText(self, ns.PageLabel(ns.GetPage(mod))) end
+    return dd
+end
+
 local function ModifierRow(mod, y)
     local label = Text(panel, "GameFontHighlight", LABELS[mod], LEFT, y - 4)
     if HELP[mod] then HelpMark(label, HELP[mod]) end
-    Button(panel, "-", 24, LEFT + 70, y, function()
-        Do(ns.actions.SetPage(mod, ns.StepPage(ns.GetPage(mod), -1)))
-    end)
-    local value = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlight")
-    value:SetPoint("TOPLEFT", LEFT + 98, y - 4)
-    value:SetWidth(70)
-    value:SetJustifyH("CENTER")
-    Button(panel, "+", 24, LEFT + 172, y, function()
-        Do(ns.actions.SetPage(mod, ns.StepPage(ns.GetPage(mod), 1)))
-    end)
-    widgets.values[mod] = value
+    widgets.values[mod] = PageDropdown(mod, LEFT + 80, y)
 end
 
 local function Build()
@@ -109,10 +139,7 @@ end
 
 function Refresh()
     if not built then return end
-    for mod, value in pairs(widgets.values) do
-        local page = ns.GetPage(mod)
-        value:SetText(page and ("Page " .. page) or "|cff999999Off|r")
-    end
+    for _, dropdown in pairs(widgets.values) do dropdown:Update() end
     local found = ns.Conflicts()
     widgets.remove:SetEnabled(#found > 0)
     widgets.undo:SetShown(ns.CanUndoBindings())

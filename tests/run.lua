@@ -39,13 +39,14 @@ check("not a number", P("seven"), nil)
 check("no fractions", P("2.5"), nil)
 check("empty", P(""), nil)
 
--- StepPage: Off sits below page 1; the ends don't wrap
-local S = ns.StepPage
-check("off + 1 is page 1", S(nil, 1), 1)
-check("page 1 - 1 is off", S(1, -1), nil)
-check("off - 1 stays off", S(nil, -1), nil)
-check("page 2 + 1", S(2, 1), 3)
-check("page 15 + 1 stays 15", S(15, 1), 15)
+-- PageLabel
+local PL = ns.PageLabel
+check("off label", PL(nil), "Off")
+check("page 2 label", PL(2), "Page 2  ·  Main Bar Page 2")
+check("page 14 label", PL(14), "Page 14  ·  Action Bar 7")
+for page = 1, ns.MAX_PAGE do
+    check("page " .. page .. " has a use", PL(page):find("·  %S") ~= nil, true)
+end
 
 -- Wiring between the files
 check("settings page hooked up", type(ns.OnChanged), "function")
