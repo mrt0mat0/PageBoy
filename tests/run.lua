@@ -27,6 +27,9 @@ check("shift only", C({ shift = 2 }), "[overridebar][vehicleui][possessbar] defa
 check("all three, Shift first", C({ alt = 9, shift = 2, ctrl = 3 }),
     "[overridebar][vehicleui][possessbar] default; [mod:shift] 2; [mod:ctrl] 3; [mod:alt] 9; default")
 check("nothing set", C({}), "[overridebar][vehicleui][possessbar] default; default")
+check("stealth only", C({ stealth = 8 }), "[overridebar][vehicleui][possessbar] default; [stealth] 8; default")
+check("modifiers win over stealth", C({ stealth = 8, shift = 2 }),
+    "[overridebar][vehicleui][possessbar] default; [mod:shift] 2; [stealth] 8; default")
 
 -- ParsePage
 local P = ns.ParsePage
@@ -52,6 +55,8 @@ end
 check("settings page hooked up", type(ns.OnChanged), "function")
 check("Alt has self-cast help", ns.HELP.alt and ns.HELP.alt[1], "Alt and Self-Cast")
 check("Shift has no help mark", ns.HELP.shift, nil)
+check("Stealth has help", ns.HELP.stealth and ns.HELP.stealth[1], "Stealth Bar")
+check("stealth is a trigger", ns.TRIGGERS[4], "stealth")
 check("SetPage action", type(ns.actions.SetPage), "function")
 check("SetPage refuses before load", (ns.actions.SetPage("shift", 3)), false)
 
@@ -72,8 +77,8 @@ InCombatLockdown = function() return false end
 
 BINDS = { ["1"] = "ACTIONBUTTON1", ["2"] = "ACTIONBUTTON2", ["SHIFT-1"] = "ACTIONPAGE1",
     ["CTRL-Q"] = "ACTIONBUTTON3", ["SHIFT-CTRL-Q"] = "SOMETHING" }
-PageBoyCharDB = { pages = { shift = 2 } }
-check("one conflict (SHIFT-1)", #ns.Conflicts(), 1)
+PageBoyCharDB = { pages = { shift = 2, stealth = 8 } }
+check("one conflict (SHIFT-1), stealth isn't a key", #ns.Conflicts(), 1)
 check("conflict text", ns.ConflictText(ns.Conflicts()[1]), "SHIFT-1 = ACTIONPAGE1")
 check("remove succeeds", (ns.actions.ClearConflicts()), true)
 check("SHIFT-1 unbound", BINDS["SHIFT-1"], nil)

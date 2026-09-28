@@ -6,7 +6,6 @@ ns = ns or {}
 
 local LEFT = 16
 local ROW_TOP, ROW_GAP = -96, 36
-local LABELS = { shift = "Shift", ctrl = "Ctrl", alt = "Alt" }
 
 -- Hover help shown next to a modifier's label: title, then the explanation.
 local HELP = {
@@ -16,6 +15,9 @@ local HELP = {
         .. "spells always self-cast because Alt is still held.\n\n"
         .. "No problem if you don't self-cast with Alt. Otherwise, move self-cast to another "
         .. "key in the game's options, or page with Shift or Ctrl instead." },
+    stealth = { "Stealth Bar",
+        "Pages while you're in Prowl, Stealth or Shadowmeld, like the stealth bar older versions "
+        .. "of the game had.\n\nHolding Shift, Ctrl or Alt still wins while you're stealthed." },
 }
 ns.HELP = HELP
 
@@ -107,7 +109,7 @@ local function PageDropdown(mod, x, y)
 end
 
 local function ModifierRow(mod, y)
-    local label = Text(panel, "GameFontHighlight", LABELS[mod], LEFT, y - 4)
+    local label = Text(panel, "GameFontHighlight", ns.TRIGGER_LABELS[mod], LEFT, y - 4)
     if HELP[mod] then HelpMark(label, HELP[mod]) end
     widgets.values[mod] = PageDropdown(mod, LEFT + 80, y)
 end
@@ -117,10 +119,10 @@ local function Build()
     Text(panel, "GameFontNormalLarge", "PageBoy", LEFT, -16)
     Text(panel, "GameFontDisableSmall", "Version " .. (version or "?") .. "  ·  Settings are saved per character", LEFT, -40)
 
-    Text(panel, "GameFontNormal", "Hold a Key to Page Your Main Bar", LEFT, -70)
-    for i, mod in ipairs(ns.MODIFIERS) do ModifierRow(mod, ROW_TOP - (i - 1) * ROW_GAP) end
+    Text(panel, "GameFontNormal", "Page Your Main Bar", LEFT, -70)
+    for i, trigger in ipairs(ns.TRIGGERS) do ModifierRow(trigger, ROW_TOP - (i - 1) * ROW_GAP) end
 
-    local below = ROW_TOP - #ns.MODIFIERS * ROW_GAP - 4
+    local below = ROW_TOP - #ns.TRIGGERS * ROW_GAP - 4
     Text(panel, "GameFontDisableSmall",
         "Pages 7 to 10 hold druid form, warrior stance and rogue stealth bars, so paging there shows those bars.",
         LEFT, below, 560)

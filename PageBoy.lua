@@ -10,6 +10,13 @@ ns = ns or {}
 
 local MODIFIERS = { "shift", "ctrl", "alt" }
 local MODIFIER_KEYS = { shift = "SHIFT", ctrl = "CTRL", alt = "ALT" }
+
+-- Everything that can page the bar, in priority order, with its macro condition. Modifiers
+-- come first so holding one still works while stealthed. Stealth covers Prowl, Stealth and
+-- Shadowmeld; the game used to give those their own bar, and on this client it doesn't.
+local TRIGGERS = { "shift", "ctrl", "alt", "stealth" }
+local CONDITIONS = { shift = "mod:shift", ctrl = "mod:ctrl", alt = "mod:alt", stealth = "stealth" }
+local TRIGGER_LABELS = { shift = "Shift", ctrl = "Ctrl", alt = "Alt", stealth = "Stealth" }
 local DEFAULT_PAGES = { shift = 2 }
 local MAX_PAGE = 15
 local BUTTONS = 12
@@ -54,14 +61,16 @@ ns.PageLabel = PageLabel
 ns.MAX_PAGE = MAX_PAGE
 ns.MODIFIERS = MODIFIERS
 ns.MODIFIER_KEYS = MODIFIER_KEYS
+ns.TRIGGERS = TRIGGERS
+ns.TRIGGER_LABELS = TRIGGER_LABELS
 
 -- The state driver's rule. Special bars keep the game's own paging; otherwise the first
 -- held modifier (Shift, then Ctrl, then Alt) picks the page; otherwise "default".
 local function PageCondition(pages)
     local parts = { "[overridebar][vehicleui][possessbar] default" }
-    for _, mod in ipairs(MODIFIERS) do
-        local page = pages[mod]
-        if page then parts[#parts + 1] = ("[mod:%s] %d"):format(mod, page) end
+    for _, trigger in ipairs(TRIGGERS) do
+        local page = pages[trigger]
+        if page then parts[#parts + 1] = ("[%s] %d"):format(CONDITIONS[trigger], page) end
     end
     parts[#parts + 1] = "default"
     return table.concat(parts, "; ")
@@ -290,8 +299,9 @@ ns.Conflicts = function() return PageBoyCharDB and Conflicts() or {} end
 
 local function Summary()
     local parts = {}
-    for _, mod in ipairs(MODIFIERS) do
-        parts[#parts + 1] = ("%s: %s"):format(MODIFIER_KEYS[mod], Pages()[mod] and ("page " .. Pages()[mod]) or "off")
+    for _, trigger in ipairs(TRIGGERS) do
+        local page = Pages()[trigger]
+        parts[#parts + 1] = ("%s: %s"):format(TRIGGER_LABELS[trigger], page and ("page " .. page) or "off")
     end
     return table.concat(parts, ", ")
 end
@@ -318,7 +328,7 @@ SlashCmdList.PAGEBOY = function(msg)
         if #found == 0 then Say("no keybind conflicts.") else ReportConflicts() end
     elseif InCombatLockdown() then
         Say("can't change that in combat.")
-    elseif MODIFIER_KEYS[cmd] then
+    elseif CONDITIONS[cmd] then
         local page = ParsePage(arg)
         if page == nil then
             Say(("use /pageboy %s <1-%d> or /pageboy %s off."):format(cmd, MAX_PAGE, cmd))
@@ -331,7 +341,7 @@ SlashCmdList.PAGEBOY = function(msg)
     else
         Say(Summary())
         print("  /pageboy  -  open the settings page")
-        print("  /pageboy shift|ctrl|alt <page or off>  -  set a modifier's page")
+        print("  /pageboy shift|ctrl|alt|stealth <page or off>  -  set a page")
         print("  /pageboy keys  -  list keybinds that block a modifier")
         print("  /pageboy debug  -  how the main bar is responding")
         print("  /pageboy probe  -  what this client lets addons read")
