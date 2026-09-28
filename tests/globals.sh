@@ -5,12 +5,12 @@
 cd "$(dirname "$0")/.." || exit 1
 
 ALLOWED="_G C_AddOns C_Spell C_UnitAuras CreateFrame GetActionBarPage GetBindingAction GetBindingKey
-GetAddOnMetadata GetBonusBarOffset InCombatLockdown InterfaceOptions_AddCategory InterfaceOptionsFrame_OpenToCategory IsInInstance ModPageCharDB RegisterStateDriver
-SLASH_MODPAGE1 SecureCmdOptionParse Settings SlashCmdList UIParent UnitHealth issecretvalue
+GetAddOnMetadata GetBonusBarOffset InCombatLockdown InterfaceOptions_AddCategory InterfaceOptionsFrame_OpenToCategory IsInInstance PageBoyCharDB RegisterStateDriver
+SLASH_PAGEBOY1 SecureCmdOptionParse Settings SlashCmdList UIParent UnitHealth issecretvalue
 ipairs math pairs pcall print select table tonumber tostring type"
 
 status=0
-for f in $(grep -v '^#' ModPage.toc | grep '\.lua$'); do
+for f in $(grep -v '^#' PageBoy.toc | grep '\.lua$'); do
     [ -f "$f" ] || continue
     for g in $(luac -l -p "$f" | grep -oE '_ENV "[A-Za-z_0-9]+"' | sed 's/_ENV "//; s/"//' | sort -u); do
         case " $(echo $ALLOWED) " in

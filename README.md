@@ -1,4 +1,4 @@
-# ModPage
+# PageBoy
 
 A World of Warcraft addon: hold **Shift**, **Ctrl** or **Alt** to page your main action bar, without replacing your bars.
 
@@ -9,17 +9,17 @@ A World of Warcraft addon: hold **Shift**, **Ctrl** or **Alt** to page your main
 
 ## Settings
 
-Open the settings page with `/modpage` or from Options > AddOns > ModPage. Set a page (or Off) for Shift, Ctrl and Alt, and see any keybinds that would get in the way.
+Open the settings page with `/pageboy` or from Options > AddOns > PageBoy. Set a page (or Off) for Shift, Ctrl and Alt, and see any keybinds that would get in the way.
 
 ## Commands
 
 | Command | What It Does |
 |---|---|
-| `/modpage` | Open the settings page (`/modpage help` lists commands) |
-| `/modpage shift <page or off>` | Set Shift's page (same for `ctrl` and `alt`) |
-| `/modpage keys` | List keybinds that stop a modifier from reaching your buttons |
+| `/pageboy` | Open the settings page (`/pageboy help` lists commands) |
+| `/pageboy shift <page or off>` | Set Shift's page (same for `ctrl` and `alt`) |
+| `/pageboy keys` | List keybinds that stop a modifier from reaching your buttons |
 
-By default the game binds Shift+1 to Shift+6 to "Action Page 1-6". Unbind those in Options > Keybindings so Shift reaches your buttons; `/modpage keys` lists any conflicts.
+By default the game binds Shift+1 to Shift+6 to "Action Page 1-6". Unbind those in Options > Keybindings so Shift reaches your buttons; `/pageboy keys` lists any conflicts.
 
 Pages 7 to 10 are where druid forms, warrior stances and rogue stealth live, so paging to them shows those bars.
 

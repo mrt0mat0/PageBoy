@@ -1,4 +1,4 @@
--- Tests for ModPage's pure helpers. Run from the repo root: lua tests/run.lua
+-- Tests for PageBoy's pure helpers. Run from the repo root: lua tests/run.lua
 
 local function stub()
     return setmetatable({}, { __index = function() return function() end end })
@@ -8,8 +8,8 @@ UIParent = stub()
 SlashCmdList = {}
 
 local ns = {}
-assert(loadfile("ModPage.lua"))("ModPage", ns)
-assert(loadfile("Options.lua"))("ModPage", ns)
+assert(loadfile("PageBoy.lua"))("PageBoy", ns)
+assert(loadfile("Options.lua"))("PageBoy", ns)
 
 local failures, total = 0, 0
 local function check(name, got, want)

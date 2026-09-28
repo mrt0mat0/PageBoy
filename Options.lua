@@ -1,4 +1,4 @@
--- ModPage settings page: Options > AddOns > ModPage, or /modpage.
+-- PageBoy settings page: Options > AddOns > PageBoy, or /pageboy.
 -- Changes go through ns.actions.SetPage, the same code the slash command uses.
 
 local addonName, ns = ...
@@ -9,12 +9,12 @@ local ROW_TOP, ROW_GAP = -96, 32
 local LABELS = { shift = "Shift", ctrl = "Ctrl", alt = "Alt" }
 
 local panel = CreateFrame("Frame")
-panel.name = "ModPage"
+panel.name = "PageBoy"
 local built, Refresh
 local widgets = { values = {} }
 
 local function Do(ok, message)
-    if not ok and message then print("|cff33ff99ModPage|r: " .. message) end
+    if not ok and message then print("|cff33ff99PageBoy|r: " .. message) end
     Refresh()
 end
 
@@ -54,7 +54,7 @@ end
 
 local function Build()
     local version = (C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata)(addonName, "Version")
-    Text(panel, "GameFontNormalLarge", "ModPage", LEFT, -16)
+    Text(panel, "GameFontNormalLarge", "PageBoy", LEFT, -16)
     Text(panel, "GameFontDisableSmall", "Version " .. (version or "?") .. "  ·  Settings are saved per character", LEFT, -40)
 
     Text(panel, "GameFontNormal", "Hold a Key to Page Your Main Bar", LEFT, -70)

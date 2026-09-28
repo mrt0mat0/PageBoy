@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: PageBoy
+## Notes: Hold Shift, Ctrl or Alt to page your main action bar. Named for the haircut.
+## Author: CJ
+## Version: 0.1
+## SavedVariablesPerCharacter: PageBoyCharDB
+
+PageBoy.lua
+Options.lua

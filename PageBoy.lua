@@ -1,4 +1,4 @@
--- ModPage: hold Shift, Ctrl or Alt to page your main action bar.
+-- PageBoy: hold Shift, Ctrl or Alt to page your main action bar.
 -- While a modifier is held, the main bar's 12 buttons are told to use that modifier's page.
 -- Let go and the override is cleared, so the game's own paging (form and stance bars,
 -- manual page flips) takes over again. Vehicle, possess and override bars are never touched.
@@ -15,7 +15,7 @@ local MAX_PAGE = 15
 local BUTTONS = 12
 
 local function Say(text)
-    print("|cff33ff99ModPage|r: " .. text)
+    print("|cff33ff99PageBoy|r: " .. text)
 end
 
 ---------------------------------------------------------------------------
@@ -23,7 +23,7 @@ end
 -- later by pointing a character at a shared table instead.
 ---------------------------------------------------------------------------
 local function Pages()
-    return ModPageCharDB.pages
+    return PageBoyCharDB.pages
 end
 
 -- "7" -> 7, "off" -> false, anything else -> nil (invalid).
@@ -62,7 +62,7 @@ ns.PageCondition = PageCondition
 ---------------------------------------------------------------------------
 -- Paging
 ---------------------------------------------------------------------------
-local header = CreateFrame("Frame", "ModPageHeader", UIParent, "SecureHandlerStateTemplate")
+local header = CreateFrame("Frame", "PageBoyHeader", UIParent, "SecureHandlerStateTemplate")
 header:SetAttribute("_onstate-page", [[
     local page = tonumber(newstate)
     for i = 1, 12 do
@@ -198,10 +198,10 @@ events:RegisterEvent("PLAYER_REGEN_ENABLED")
 events:RegisterEvent("UPDATE_BINDINGS")
 events:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
-        ModPageCharDB = ModPageCharDB or {}
-        if not ModPageCharDB.pages then
-            ModPageCharDB.pages = {}
-            for mod, page in pairs(DEFAULT_PAGES) do ModPageCharDB.pages[mod] = page end
+        PageBoyCharDB = PageBoyCharDB or {}
+        if not PageBoyCharDB.pages then
+            PageBoyCharDB.pages = {}
+            for mod, page in pairs(DEFAULT_PAGES) do PageBoyCharDB.pages[mod] = page end
         end
         Apply()
         ReportConflicts()
@@ -215,15 +215,15 @@ end)
 -- Changes go through here from both the slash command and the settings page.
 ns.actions = {}
 function ns.actions.SetPage(mod, page)
-    if not ModPageCharDB then return false, "not loaded yet." end
+    if not PageBoyCharDB then return false, "not loaded yet." end
     if InCombatLockdown() then return false, "can't change that in combat." end
     Pages()[mod] = page or nil
     Apply()
     if ns.OnChanged then ns.OnChanged() end
     return true
 end
-ns.GetPage = function(mod) return ModPageCharDB and Pages()[mod] end
-ns.Conflicts = function() return ModPageCharDB and Conflicts() or {} end
+ns.GetPage = function(mod) return PageBoyCharDB and Pages()[mod] end
+ns.Conflicts = function() return PageBoyCharDB and Conflicts() or {} end
 
 local function Summary()
     local parts = {}
@@ -233,10 +233,10 @@ local function Summary()
     return table.concat(parts, ", ")
 end
 
-SLASH_MODPAGE1 = "/modpage"
-SlashCmdList.MODPAGE = function(msg)
+SLASH_PAGEBOY1 = "/pageboy"
+SlashCmdList.PAGEBOY = function(msg)
     local cmd, arg = (msg or ""):lower():match("^%s*(%S*)%s*(.-)%s*$")
-    if not ModPageCharDB then
+    if not PageBoyCharDB then
         Say("not loaded yet.")
     elseif cmd == "" or cmd == "options" or cmd == "settings" then
         if InCombatLockdown() then
@@ -244,7 +244,7 @@ SlashCmdList.MODPAGE = function(msg)
         elseif ns.OpenOptions then
             ns.OpenOptions()
         else
-            Say("this client has no addon settings page. /modpage help lists the commands.")
+            Say("this client has no addon settings page. /pageboy help lists the commands.")
         end
     elseif cmd == "debug" then
         Debug()
@@ -258,7 +258,7 @@ SlashCmdList.MODPAGE = function(msg)
     elseif MODIFIER_KEYS[cmd] then
         local page = ParsePage(arg)
         if page == nil then
-            Say(("use /modpage %s <1-%d> or /modpage %s off."):format(cmd, MAX_PAGE, cmd))
+            Say(("use /pageboy %s <1-%d> or /pageboy %s off."):format(cmd, MAX_PAGE, cmd))
             return
         end
         local ok, why = ns.actions.SetPage(cmd, page)
@@ -267,10 +267,10 @@ SlashCmdList.MODPAGE = function(msg)
         ReportConflicts()
     else
         Say(Summary())
-        print("  /modpage  -  open the settings page")
-        print("  /modpage shift|ctrl|alt <page or off>  -  set a modifier's page")
-        print("  /modpage keys  -  list keybinds that block a modifier")
-        print("  /modpage debug  -  how the main bar is responding")
-        print("  /modpage probe  -  what this client lets addons read")
+        print("  /pageboy  -  open the settings page")
+        print("  /pageboy shift|ctrl|alt <page or off>  -  set a modifier's page")
+        print("  /pageboy keys  -  list keybinds that block a modifier")
+        print("  /pageboy debug  -  how the main bar is responding")
+        print("  /pageboy probe  -  what this client lets addons read")
     end
 end
