@@ -27,9 +27,9 @@ check("shift only", C({ shift = 2 }), "[overridebar][vehicleui][possessbar] defa
 check("all three, Shift first", C({ alt = 9, shift = 2, ctrl = 3 }),
     "[overridebar][vehicleui][possessbar] default; [mod:shift] 2; [mod:ctrl] 3; [mod:alt] 9; default")
 check("nothing set", C({}), "[overridebar][vehicleui][possessbar] default; default")
-check("stealth only", C({ stealth = 8 }), "[overridebar][vehicleui][possessbar] default; [stealth] 8; default")
+check("stealth only, not Shadowmeld", C({ stealth = 8 }), "[overridebar][vehicleui][possessbar] default; [bonusbar:1, stealth] 8; default")
 check("modifiers win over stealth", C({ stealth = 8, shift = 2 }),
-    "[overridebar][vehicleui][possessbar] default; [mod:shift] 2; [stealth] 8; default")
+    "[overridebar][vehicleui][possessbar] default; [mod:shift] 2; [bonusbar:1, stealth] 8; default")
 
 -- ParsePage
 local P = ns.ParsePage

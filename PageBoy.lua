@@ -12,10 +12,11 @@ local MODIFIERS = { "shift", "ctrl", "alt" }
 local MODIFIER_KEYS = { shift = "SHIFT", ctrl = "CTRL", alt = "ALT" }
 
 -- Everything that can page the bar, in priority order, with its macro condition. Modifiers
--- come first so holding one still works while stealthed. Stealth covers Prowl, Stealth and
--- Shadowmeld; the game used to give those their own bar, and on this client it doesn't.
+-- come first so holding one still works while stealthed. Stealth means Prowl (in Cat Form)
+-- or Rogue Stealth, which older clients gave their own bar: [stealth] alone would also catch
+-- Shadowmeld, so it also requires bonus bar 1, the bar Cat Form and Rogue Stealth use.
 local TRIGGERS = { "shift", "ctrl", "alt", "stealth" }
-local CONDITIONS = { shift = "mod:shift", ctrl = "mod:ctrl", alt = "mod:alt", stealth = "stealth" }
+local CONDITIONS = { shift = "mod:shift", ctrl = "mod:ctrl", alt = "mod:alt", stealth = "bonusbar:1, stealth" }
 local TRIGGER_LABELS = { shift = "Shift", ctrl = "Ctrl", alt = "Alt", stealth = "Stealth" }
 local DEFAULT_PAGES = { shift = 2 }
 local MAX_PAGE = 15

@@ -16,8 +16,9 @@ local HELP = {
         .. "No problem if you don't self-cast with Alt. Otherwise, move self-cast to another "
         .. "key in the game's options, or page with Shift or Ctrl instead." },
     stealth = { "Stealth Bar",
-        "Pages while you're in Prowl, Stealth or Shadowmeld, like the stealth bar older versions "
-        .. "of the game had.\n\nHolding Shift, Ctrl or Alt still wins while you're stealthed." },
+        "Pages while you're in Prowl (Cat Form) or Rogue Stealth, like the stealth bar older "
+        .. "versions of the game had. Shadowmeld doesn't count.\n\nHolding Shift, Ctrl or Alt "
+        .. "still wins while you're stealthed." },
 }
 ns.HELP = HELP
 
