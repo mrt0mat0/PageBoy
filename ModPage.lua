@@ -36,6 +36,16 @@ local function ParsePage(text)
 end
 ns.ParsePage = ParsePage
 
+-- One step up or down from a page: Off sits below page 1, and the ends don't wrap.
+local function StepPage(page, delta)
+    local n = (page or 0) + delta
+    if n < 1 then return nil end
+    return math.min(n, MAX_PAGE)
+end
+ns.StepPage = StepPage
+ns.MODIFIERS = MODIFIERS
+ns.MODIFIER_KEYS = MODIFIER_KEYS
+
 -- The state driver's rule. Special bars keep the game's own paging; otherwise the first
 -- held modifier (Shift, then Ctrl, then Alt) picks the page; otherwise "default".
 local function PageCondition(pages)
@@ -55,13 +65,9 @@ ns.PageCondition = PageCondition
 local header = CreateFrame("Frame", "ModPageHeader", UIParent, "SecureHandlerStateTemplate")
 header:SetAttribute("_onstate-page", [[
     local page = tonumber(newstate)
-    local refresh = self:GetAttribute("refresh")
     for i = 1, 12 do
         local button = self:GetFrameRef("button" .. i)
-        if button then
-            button:SetAttribute("actionpage", page)
-            if refresh then button:CallMethod("UpdateAction", true) end
-        end
+        if button then button:SetAttribute("actionpage", page) end
     end
 ]])
 
@@ -129,7 +135,6 @@ local function Debug()
     Show("driver rule", PageCondition(Pages()))
     Show("rule result right now", SecureCmdOptionParse(PageCondition(Pages())))
     Show("driver state", header:GetAttribute("state-page"))
-    Show("refresh mode", header:GetAttribute("refresh") and "on" or "off")
     Show("in combat", InCombatLockdown())
 end
 
@@ -190,6 +195,7 @@ end
 local events = CreateFrame("Frame")
 events:RegisterEvent("PLAYER_LOGIN")
 events:RegisterEvent("PLAYER_REGEN_ENABLED")
+events:RegisterEvent("UPDATE_BINDINGS")
 events:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
         ModPageCharDB = ModPageCharDB or {}
@@ -199,10 +205,25 @@ events:SetScript("OnEvent", function(_, event)
         end
         Apply()
         ReportConflicts()
+    elseif event == "UPDATE_BINDINGS" then
+        if ns.OnChanged then ns.OnChanged() end
     elseif not applied then
         Apply()   -- logged in mid-fight: set up once combat ends
     end
 end)
+
+-- Changes go through here from both the slash command and the settings page.
+ns.actions = {}
+function ns.actions.SetPage(mod, page)
+    if not ModPageCharDB then return false, "not loaded yet." end
+    if InCombatLockdown() then return false, "can't change that in combat." end
+    Pages()[mod] = page or nil
+    Apply()
+    if ns.OnChanged then ns.OnChanged() end
+    return true
+end
+ns.GetPage = function(mod) return ModPageCharDB and Pages()[mod] end
+ns.Conflicts = function() return ModPageCharDB and Conflicts() or {} end
 
 local function Summary()
     local parts = {}
@@ -217,6 +238,14 @@ SlashCmdList.MODPAGE = function(msg)
     local cmd, arg = (msg or ""):lower():match("^%s*(%S*)%s*(.-)%s*$")
     if not ModPageCharDB then
         Say("not loaded yet.")
+    elseif cmd == "" or cmd == "options" or cmd == "settings" then
+        if InCombatLockdown() then
+            Say("settings open after combat.")
+        elseif ns.OpenOptions then
+            ns.OpenOptions()
+        else
+            Say("this client has no addon settings page. /modpage help lists the commands.")
+        end
     elseif cmd == "debug" then
         Debug()
     elseif cmd == "probe" then
@@ -232,17 +261,13 @@ SlashCmdList.MODPAGE = function(msg)
             Say(("use /modpage %s <1-%d> or /modpage %s off."):format(cmd, MAX_PAGE, cmd))
             return
         end
-        Pages()[cmd] = page or nil
-        Apply()
+        local ok, why = ns.actions.SetPage(cmd, page)
+        if not ok then Say(why) return end
         Say(Summary())
         ReportConflicts()
-    elseif cmd == "refresh" then
-        -- Experimental: also ask each button to redraw when the page changes. Only for
-        -- testing whether the icons update without it; /reload turns it back off.
-        header:SetAttribute("refresh", not header:GetAttribute("refresh") or nil)
-        Say("refresh mode " .. (header:GetAttribute("refresh") and "on (experimental)" or "off") .. ".")
     else
         Say(Summary())
+        print("  /modpage  -  open the settings page")
         print("  /modpage shift|ctrl|alt <page or off>  -  set a modifier's page")
         print("  /modpage keys  -  list keybinds that block a modifier")
         print("  /modpage debug  -  how the main bar is responding")

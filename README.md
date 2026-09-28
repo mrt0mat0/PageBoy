@@ -7,11 +7,15 @@ A World of Warcraft addon: hold **Shift**, **Ctrl** or **Alt** to page your main
 - Vehicle, possess and override bars are never touched.
 - Works in combat. Settings are saved per character.
 
+## Settings
+
+Open the settings page with `/modpage` or from Options > AddOns > ModPage. Set a page (or Off) for Shift, Ctrl and Alt, and see any keybinds that would get in the way.
+
 ## Commands
 
 | Command | What It Does |
 |---|---|
-| `/modpage` | Show your current pages and the commands |
+| `/modpage` | Open the settings page (`/modpage help` lists commands) |
 | `/modpage shift <page or off>` | Set Shift's page (same for `ctrl` and `alt`) |
 | `/modpage keys` | List keybinds that stop a modifier from reaching your buttons |
 

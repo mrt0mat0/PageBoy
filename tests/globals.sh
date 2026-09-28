@@ -4,9 +4,9 @@
 # Run from the repo root: sh tests/globals.sh
 cd "$(dirname "$0")/.." || exit 1
 
-ALLOWED="_G C_Spell C_UnitAuras CreateFrame GetActionBarPage GetBindingAction GetBindingKey
-GetBonusBarOffset InCombatLockdown IsInInstance ModPageCharDB RegisterStateDriver
-SLASH_MODPAGE1 SecureCmdOptionParse SlashCmdList UIParent UnitHealth issecretvalue
+ALLOWED="_G C_AddOns C_Spell C_UnitAuras CreateFrame GetActionBarPage GetBindingAction GetBindingKey
+GetAddOnMetadata GetBonusBarOffset InCombatLockdown InterfaceOptions_AddCategory InterfaceOptionsFrame_OpenToCategory IsInInstance ModPageCharDB RegisterStateDriver
+SLASH_MODPAGE1 SecureCmdOptionParse Settings SlashCmdList UIParent UnitHealth issecretvalue
 ipairs math pairs pcall print select table tonumber tostring type"
 
 status=0

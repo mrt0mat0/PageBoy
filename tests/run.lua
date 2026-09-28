@@ -9,6 +9,7 @@ SlashCmdList = {}
 
 local ns = {}
 assert(loadfile("ModPage.lua"))("ModPage", ns)
+assert(loadfile("Options.lua"))("ModPage", ns)
 
 local failures, total = 0, 0
 local function check(name, got, want)
@@ -36,6 +37,19 @@ check("too high", P("16"), nil)
 check("not a number", P("seven"), nil)
 check("no fractions", P("2.5"), nil)
 check("empty", P(""), nil)
+
+-- StepPage: Off sits below page 1; the ends don't wrap
+local S = ns.StepPage
+check("off + 1 is page 1", S(nil, 1), 1)
+check("page 1 - 1 is off", S(1, -1), nil)
+check("off - 1 stays off", S(nil, -1), nil)
+check("page 2 + 1", S(2, 1), 3)
+check("page 15 + 1 stays 15", S(15, 1), 15)
+
+-- Wiring between the files
+check("settings page hooked up", type(ns.OnChanged), "function")
+check("SetPage action", type(ns.actions.SetPage), "function")
+check("SetPage refuses before load", (ns.actions.SetPage("shift", 3)), false)
 
 print(("%d/%d passed"):format(total - failures, total))
 os.exit(failures == 0 and 0 or 1)
