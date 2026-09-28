@@ -4,6 +4,7 @@
 ## Author: CJ
 ## Version: 1.0
 ## SavedVariablesPerCharacter: PageBoyCharDB
+## X-Curse-Project-ID: 1716623
 
 PageBoy.lua
 Options.lua
